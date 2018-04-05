@@ -12,9 +12,15 @@ fi
 
 function curl_wrapper() {
 
+    local METHOD=
+    local URI=
+    local CONTENT=
+    local BODY=
+    local POSITIONAL=
+
     while [[ $# -gt 0 ]]
     do
-        key="$1"
+        local key="$1"
 
         case $key in
             -m|--method)
@@ -44,33 +50,30 @@ function curl_wrapper() {
         esac
     done
 
-    if [[ -z $URI ]]; then
+    if [[ ! $URI ]]; then
         $echo "You must provide a URI!"
         return
     fi
 
-    if [[ -z $CONTENT ]]; then
+    if [[ ! $CONTENT ]]; then
         CONTENT="application/json"
     fi
 
-    if [[ -z $METHOD ]]; then
+    if [[ ! $METHOD ]]; then
         METHOD="GET"
     fi
 
-    if [[ -z $BODY && $METHOD == "POST" ]]; then
+    if [[ ! $BODY && $METHOD == "POST" ]]; then
         $echo "You must provide body data for a POST!"
         return
     elif [[ $METHOD == "POST" ]]; then
-        BODY_PARAM="-d '$BODY'"
-        CONTENT_TYPE_PARAM="-H \"Content-Type:$CONTENT\""
-    else
-        BODY_PARAM=
-        CONTENT_TYPE_PARAM=
+        BODY="-d '$BODY'"
+        CONTENT="-H \"Content-Type:$CONTENT\""
     fi
 
-    CMD="$curl -kX $METHOD $BODY_PARAM $CONTENT_TYPE_PARAM $URI"
+    CMD="$curl -kX $METHOD $BODY $CONTENT $URI"
     echo $CMD
-    #$CMD
+    $CMD
 
 }
 

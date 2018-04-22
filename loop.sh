@@ -33,15 +33,16 @@ function loop_command() {
         return
     fi
 
+    echo $$
+
     for i in $(seq 1 $ITERATIONS); do
         if [[ $CMD ]]; then
             echo $CMD
-            eval $CMD
+            $CMD
         elif [[ $SRC ]]; then
             bash $SRC
         fi
     done
-
 
 }
 

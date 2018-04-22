@@ -32,14 +32,8 @@ function ssh_into() {
         esac
     done
 
-    if [[ -z $BASTION_ADDRESS ]]; then
-        BASTION_ADDRESS=test-admin
-    fi
-
-    if [[ -z $HOST_IP ]]; then
-        echo "You need to supply a host IP to connect to"
-        return
-    fi
+    BASTION_ADDRESS=${BASTION_ADDRESS:-test-admin}
+    HOST_IP=${HOST_IP:?"You need to supply a host IP to connect to"}
 
     local ARGS=
     if [[ $IS_PROD = false ]]; then
@@ -63,7 +57,51 @@ function ssh_into() {
 
 }
 
+function scp_into() {
+    local POSITIONAL=()
+    local BASTION_ADDRESS=
+    local HOST_IP=
+    local IS_PROD=
+
+    while [[ $# -gt 0 ]]
+    do
+        local key="$1"
+
+        case $key in
+            -b|--bastion)
+                BASTION_ADDRESS="$2"
+                shift # past argument
+                shift # past value
+            ;;
+            -h|--host)
+                HOST_IP="$2"
+                shift # past argument
+                shift # past value
+            ;;
+            *)    # unknown option
+                POSITIONAL+=("$1") # save it in an array for later
+                shift # past argument
+            ;;
+        esac
+    done
+
+    BASTION_ADDRESS=${BASTION_ADDRESS:-test-admin}
+    HOST_IP=${HOST_IP:?"You need to supply a host IP to connect to"}
+
+    if [[ "$SSH_AUTH_SOCK" == "" ]]; then
+        eval `ssh-agent`;
+        while read id; do ssh-add $(echo $id) ; done<~/.bash_lib/ssh_identities
+    fi
+
+    local CMD="scp -oProxyJump=ec2-user@$BASTION_ADDRESS ${POSITIONAL[*]}  ec2-user@$HOST_IP:~/"
+
+    echo $CMD
+
+    $CMD
+}
+
 #Aliases
 alias sshin=ssh_into
+alias scpin=scp_into
 
 

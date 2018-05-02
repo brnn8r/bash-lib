@@ -48,13 +48,21 @@ function _hg_parse_stat() {
     commit="$1"
     commit_letter=$2
     output_letter=$3
-    count=$(echo "$commit" | awk 'BEGIN{FS=": "}{print $2}' | awk 'BEGIN{RS=", "}{print $1" "$2}' | awk '/'$commit_letter'/,NF=1');
+    count=$(echo "$commit" | awk 'BEGIN{RS=", "}{print $1" "$2}' | awk '/'$commit_letter'/,NF=1');
     if [[ $count -gt 0 ]]; then
         echo " "$output_letter$count;
     fi
 }
 
 function _hg_prompt() {
+
+    DIFF=$(hg diff --nodates --noprefix 2>/dev/null | md5 -n)
+
+    if [[ "$DIFF" == "$CACHED_DIFF" && ! -z "$CACHED_PROMPT" ]]; then
+        echo -e $CACHED_PROMPT
+        return
+    fi
+
     cRESET="\e[0m";
 
     cRED="\e[0;31m";
@@ -71,7 +79,7 @@ function _hg_prompt() {
         BRANCH=$(echo "$HG_SUMMARY" | grep branch: | awk 'BEGIN{FS=": "}{print $2}');
         NUM_HEADS=$(echo "$HG_SUMMARY" | grep update: | grep 'branch heads');
         HAS_OUT=$(echo "$HG_SUMMARY" | grep phases:);
-        COMMIT=$(echo "$HG_SUMMARY" | grep commit:)
+        COMMIT=$(echo "$HG_SUMMARY" | grep commit: | sed -e 's/commit: //')
 
         if [[ $HAS_OUT ]]; then
             out_stats=$cGRAY" *";
@@ -89,7 +97,6 @@ function _hg_prompt() {
             IMAGE_VERSION="service:$(cat service.json | jq .docker.image.version | tr '"' ' ')"
             MODEL_VERSION="model:$(cat service.json | jq .model.version | tr '"' ' ')"
         fi
-
 
         echo -e " \
 $branch\
@@ -115,13 +122,17 @@ function prompter() {
     cMAGENTA="\e[0;35m";
     cYELLOW="\e[0;33m";
 
+    export CACHED_PROMPT=$(_hg_prompt)
+
     PS1=""
     PS1="$PS1\["$cGREEN"\]\h \["$cRESET"\]"
     PS1="$PS1\["$cYELLOW"\]$(_collapse_pwd)\["$cRESET"\]"
-    PS1="$PS1\[$(_hg_prompt)\]"
+    PS1="$PS1 \[$CACHED_PROMPT\]"
     PS1="$PS1\r\n"
-    PS1="$PS1\["$cMAGENTA"\]\$ \["$cRESET"\]"
+    PS1="$PS1\["$cGREEN"\]\$ > \["$cRESET"\]"
     export PS1
+
+    export CACHED_DIFF="$(hg diff --nodates --noprefix 2>/dev/null | md5 -n)"
 }
 
 PROMPT_COMMAND=prompter

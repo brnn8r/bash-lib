@@ -45,17 +45,18 @@ function hgup() {
 }
 
 function _hg_parse_stat() {
-    stats="$1"
-    stat_letter=$2
+    commit="$1"
+    commit_letter=$2
     output_letter=$3
-    count=$(echo "$stats" | grep commit: | awk 'BEGIN{FS=": "}{print $2}' | awk 'BEGIN{RS=", "}{print $1" "$2}' | awk '/'$stat_letter'/,NF=1');
+    count=$(echo "$commit" | awk 'BEGIN{FS=": "}{print $2}' | awk 'BEGIN{RS=", "}{print $1" "$2}' | awk '/'$commit_letter'/,NF=1');
     if [[ $count -gt 0 ]]; then
         echo " "$output_letter$count;
     fi
 }
+
 function _hg_prompt() {
     cRESET="\e[0m";
-    
+
     cRED="\e[0;31m";
     cGREEN="\e[0;32m";
     cBLUE="\e[0;34m";
@@ -63,32 +64,42 @@ function _hg_prompt() {
     cMAGENTA="\e[0;35m";
     cCYAN="\e[0;36m";
     cGRAY="\e[0;37m";
-    
+
     HG_SUMMARY_SCRIPT="hg.exe summary";
     HG_SUMMARY=$($HG_SUMMARY_SCRIPT 2>&1)
     if [[ $HG_SUMMARY && $HG_SUMMARY != *'not found'* ]]; then
         BRANCH=$(echo "$HG_SUMMARY" | grep branch: | awk 'BEGIN{FS=": "}{print $2}');
         NUM_HEADS=$(echo "$HG_SUMMARY" | grep update: | grep 'branch heads');
         HAS_OUT=$(echo "$HG_SUMMARY" | grep phases:);
-        
+        COMMIT=$(echo "$HG_SUMMARY" | grep commit:)
+
         if [[ $HAS_OUT ]]; then
             out_stats=$cGRAY" *";
         fi
-        
+
         if [[ $NUM_HEADS ]]; then
             branch=$cRED"[$BRANCH]"
         else
             branch=$cCYAN"[$BRANCH]"
         fi
-        
+
+        IMAGE_VERSION=
+        MODEL_VERSION=
+        if [[ -r service.json ]]; then
+            IMAGE_VERSION="service:$(cat service.json | jq .docker.image.version | tr '"' ' ')"
+            MODEL_VERSION="model:$(cat service.json | jq .model.version | tr '"' ' ')"
+        fi
+
+
         echo -e " \
 $branch\
-$cGREEN$(_hg_parse_stat "$HG_SUMMARY" "added" "+")\
-$cBLUE$(_hg_parse_stat "$HG_SUMMARY" "modified" "~")\
-$cRED$(_hg_parse_stat "$HG_SUMMARY" "removed" "-")\
-$cCYAN$(_hg_parse_stat "$HG_SUMMARY" "renamed" "^")\
-$cMAGENTA$(_hg_parse_stat "$HG_SUMMARY" "unknown" "?")\
-$cYELLOW$(_hg_parse_stat "$HG_SUMMARY" "deleted" "!")\
+$cGREEN$(_hg_parse_stat "$COMMIT" "added" "+")\
+$cBLUE$(_hg_parse_stat "$COMMIT" "modified" "~")\
+$cRED$(_hg_parse_stat "$COMMIT" "removed" "-")\
+$cCYAN$(_hg_parse_stat "$COMMIT" "renamed" "^")\
+$cMAGENTA$(_hg_parse_stat "$COMMIT" "unknown" "?")\
+$cYELLOW$(_hg_parse_stat "$COMMIT" "deleted" "!")\
+ $IMAGE_VERSION $MODEL_VERSION \
 $out_stats\
         $cRESET"
     fi
@@ -103,7 +114,7 @@ function prompter() {
     cGREEN="\e[0;32m";
     cMAGENTA="\e[0;35m";
     cYELLOW="\e[0;33m";
-    
+
     PS1=""
     PS1="$PS1\["$cGREEN"\]\h \["$cRESET"\]"
     PS1="$PS1\["$cYELLOW"\]$(_collapse_pwd)\["$cRESET"\]"

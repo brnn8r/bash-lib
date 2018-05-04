@@ -1,4 +1,4 @@
-source ~/.bash_lib/path.sh
+source "$(dirname ${BASH_SOURCE[0]})/path.sh"
 
 function _hg_branch_jira() {
     hg branch | tail -n 1 | sed 's/^\([A-Z]\{3,4\}-[0-9]\+\).*/\1/';

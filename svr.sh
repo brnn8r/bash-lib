@@ -1,3 +1,5 @@
+source "$(dirname ${BASH_SOURCE[0]})/path.sh"
+
 function build_clean_start() {
 
     svr auth generate && svr docker build && svr docker clean && svr docker start
@@ -38,7 +40,7 @@ function initialize_model_link() {
 
     [[ -d "$MODEL_DIR" ]] || mkdir -p $MODEL_DIR
 
-    eval node -e "'let fs = require(\"fs\"); fs.symlinkSync(\"$MODEL_DIR\", \"$LINK_DIR\", \"junction\")'";
+    sym_link $MODEL_DIR $LINK_DIR
 
 }
 
@@ -58,7 +60,7 @@ function initialize_logs_link() {
 
     [[ -d "$LOGS_DIR" ]] || mkdir -p $LOGS_DIR
 
-    eval node -e "'let fs = require(\"fs\"); fs.symlinkSync(\"$LOGS_DIR\", \"$LINK_DIR\", \"junction\")'";
+    sym_link $LOGS_DIR $LINK_DIR
 
 }
 

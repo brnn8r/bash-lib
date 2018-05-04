@@ -34,7 +34,7 @@ function initialize_model_link() {
         return
     fi
 
-    local MODEL_DIR="/models/$BUCKET_NAME/$MODEL_VERSION/"
+    local MODEL_DIR="c:/models/$BUCKET_NAME/$MODEL_VERSION/"
 
     [[ -d "$MODEL_DIR" ]] || mkdir -p $MODEL_DIR
 
@@ -54,7 +54,7 @@ function initialize_logs_link() {
         return
     fi
 
-    LOGS_DIR="/var/log/tm-services/$IMAGE_NAME/"
+    LOGS_DIR="c:/var/log/tm-services/$IMAGE_NAME/"
 
     [[ -d "$LOGS_DIR" ]] || mkdir -p $LOGS_DIR
 

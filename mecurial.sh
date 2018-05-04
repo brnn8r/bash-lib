@@ -56,11 +56,16 @@ function _hg_parse_stat() {
 
 function _hg_prompt() {
 
-    DIFF=$(hg diff --nodates --noprefix 2>/dev/null | md5 -n)
 
-    if [[ "$DIFF" == "$CACHED_DIFF" && ! -z "$CACHED_PROMPT" ]]; then
-        echo -e $CACHED_PROMPT
-        return
+    if [[ ! -z "$CACHED_PROMPT" ]]; then
+
+        DIFF=$(hg diff --nodates --noprefix 2>/dev/null | md5 -n)
+        BRANCH=$(hg branch 2>/dev/null | tail -n 1)
+
+        if ([[ "$DIFF" == "$CACHED_DIFF" ]] && [[ "$BRANCH" == "$CACHED_BRANCH" ]]); then
+            echo -e "$CACHED_PROMPT"
+            return
+        fi
     fi
 
     cRESET="\e[0m";
@@ -127,12 +132,13 @@ function prompter() {
     PS1=""
     PS1="$PS1\["$cGREEN"\]\h \["$cRESET"\]"
     PS1="$PS1\["$cYELLOW"\]$(_collapse_pwd)\["$cRESET"\]"
-    PS1="$PS1 \[$CACHED_PROMPT\]"
+    PS1="$PS1\[$CACHED_PROMPT\]"
     PS1="$PS1\r\n"
     PS1="$PS1\["$cGREEN"\]\$ > \["$cRESET"\]"
     export PS1
 
     export CACHED_DIFF="$(hg diff --nodates --noprefix 2>/dev/null | md5 -n)"
+    export CACHED_BRANCH=$(hg branch 2>/dev/null | tail -n 1)
 }
 
 PROMPT_COMMAND=prompter

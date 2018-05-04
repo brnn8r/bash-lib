@@ -1,13 +1,11 @@
 source ~/.bash_lib/path.sh
 
 function _hg_branch_jira() {
-    hg branch | sed 's/^\([A-Z]\{3,4\}-[0-9]\+\).*/\1/';
+    hg branch | tail -n 1 | sed 's/^\([A-Z]\{3,4\}-[0-9]\+\).*/\1/';
 }
 function jira() {
 
-    echo ${BASH_SOURCE[0]}
     local DIR=$(script_pwd "${BASH_SOURCE[0]}")
-
 
     JIRA_LOCATION_FILE="$DIR/jira_location"
 

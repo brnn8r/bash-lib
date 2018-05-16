@@ -10,9 +10,15 @@ function initialize_service() {
     SERVICE_FILE="service.json"
     NODE="$(which node)"
 
-    [[ -r $SERVICE_FILE ]] || (echo "No service.json file found!" && return)
+    if [[ ! -r $SERVICE_FILE ]]; then
+        echo "No service.json file found!"
+        return
+    fi
 
-    [[ -x "$NODE" ]] || (echo "This script requires node!" && return)
+    if [[ ! -x "$NODE" ]]; then
+        echo "This script requires node!"
+        return
+    fi
 
     initialize_model_link
     initialize_logs_link

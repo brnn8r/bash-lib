@@ -24,7 +24,7 @@ function list_instances ()
     }'
   }
 
-  profile="${1:-default}"
+  profile="${1:-i}"
   echo -e $cCYAN"Listing instances for profile:'$profile'..."$cRESET
 
   region=$2
@@ -60,3 +60,11 @@ alias aws-gs="get_services"
 alias aws-us="update_service"
 alias setprod="$svr set aws.__allow_prod_access__ true"
 alias unsetprod="$svr unset aws.__allow_prod_access__"
+
+alias mfa-id="aws-mfa --profile identity"
+alias mfa-prod="aws-mfa --profile identity --short-term-suffix prod --assume-role arn:aws:iam::695716229028:role/CrossAccountAdministrator --role-session-name prod-admin"
+alias mfa-ops="aws-mfa --profile identity --short-term-suffix ops --assume-role arn:aws:iam::674426430959:role/CrossAccountAdministrator --role-session-name ops-admin"
+alias mfa-test="aws-mfa --profile identity --short-term-suffix test --assume-role arn:aws:iam::362571885929:role/CrossAccountAdministrator --role-session-name test-admin"
+alias mfa-dev="aws-mfa --profile identity --short-term-suffix dev --assume-role arn:aws:iam::005280096196:role/CrossAccountAdministrator --role-session-name dev-admin"
+alias mfa-svr="aws-mfa --assume-role arn:aws:iam::362571885929:role/_TEST_TMCrossAccountEngineer --profile test"
+

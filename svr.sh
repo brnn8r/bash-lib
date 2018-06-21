@@ -36,9 +36,9 @@ function initialize_model_link() {
         return
     fi
 
-    local BUCKET_NAME=$(cat service.json | jq '.model.bucket.name' | sed -e 's/"//g')
+    local BUCKET_NAME=$(cat service.json | jq '.service.clusters[].aws | select(.account_id == 362571885929) | .bucket.name' | sed -e 's/"//g')
     if [[ "$BUCKET_NAME" == "null" ]]; then
-        echo "No .model.bucket.name found in $SERVICE_FILE!"
+        echo "No bucket name found in $SERVICE_FILE!"
         return
     fi
 

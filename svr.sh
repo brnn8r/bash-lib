@@ -22,6 +22,7 @@ function initialize_service() {
 
     initialize_model_link
     initialize_logs_link
+    initialize_etc_link
 }
 
 function initialize_model_link() {
@@ -70,5 +71,16 @@ function initialize_logs_link() {
 
 }
 
+function initialize_etc_link() {
+
+    local LINK_DIR="etc"
+
+    [[ -d $LINK_DIR ]] && return
+
+    mkdir etc
+
+}
+
 alias initsvr=initialize_service
 alias svrbcs=build_clean_start
+alias svrcbc="svr docker clean && svr docker build && svr docker clean"
